@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import sourceData from "@/data.json";
+
 defineProps<{
   msg: string;
 }>();
@@ -14,6 +16,7 @@ defineProps<{
       What's next?
     </h3>
   </div>
+  <div>{{ sourceData }}</div>
 </template>
 
 <style scoped>

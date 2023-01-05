@@ -17,7 +17,8 @@ module.exports = {
   },
   rules: {
     // 함수 파라미터 변경 금지 for pure function (https://eslint.org/docs/latest/rules/no-param-reassign)
+    // 객체의 멤버 변수 변경은 막을 수 없음. Readonly<타입> 으로 막아야 함
     "no-param-reassign": "error",
-    "no-unused-vars": "error"
+    "no-unused-vars": "warn"
   }
 };
