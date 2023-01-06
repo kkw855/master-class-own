@@ -1,17 +1,15 @@
 <template>
-  <div
-    v-for="thread in threads"
-    v-bind:key="thread.id"
-    class="col-large push-top"
-  >
-    <h1>{{ thread.title }}</h1>
+  <div class="col-large push-top">
+    <h1>
+      {{ thread.title }}
+    </h1>
 
     <div class="post-list">
       <div class="post" v-for="postId in thread.posts" :key="postId">
         <div class="user-info">
           <a href="#" class="user-name">{{
             O.fold(
-              () => "unknown user",
+              () => "unknown avatar",
               ({ name }) => name
             )(userByPostId(postId))
           }}</a>
@@ -60,26 +58,25 @@
 
 <script setup lang="ts">
 import sourceData from "@/data.json";
-import type Thread from "@/types/Thread";
 import type Post from "@/types/Post";
 import * as A from "fp-ts/Array";
 import * as O from "fp-ts/Option";
 import { pipe } from "fp-ts/function";
 import type User from "@/types/User";
+import type Thread from "@/types/Thread";
+import { computed } from "vue";
+
+const props = defineProps<{
+  id: string;
+}>();
+
+const thread = computed(() => threads.find((t) => t.id === props.id));
 
 const threads: Thread[] = sourceData.threads;
 // json 파일에 포함된 emoji 를 위해서
 const posts: Post[] = JSON.parse(JSON.stringify(sourceData.posts));
 const users: User[] = sourceData.users;
 
-// TODO: postId 에 해당하는 post 가 있는지 확인
-// const checkPost = (id: string) =>
-//   pipe(
-//     posts,
-//     A.exists((post) => post.id === id)
-//   );
-
-// TODO: 해당 postId 데이터 가져오기. 순수 함수가 아님 posts 도 파라미터로 전달해야 할 듯. 유닛 테스트 배우고 해야 할 듯
 const _postById =
   (posts: Post[]) =>
   (postId: string): O.Option<Post> =>

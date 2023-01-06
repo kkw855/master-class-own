@@ -1,17 +1,17 @@
 export default interface Post {
-  id: string;
-  userId: string;
-  threadId: string;
-  edited?: {
-    at: number;
-    by: string;
-    moderated: boolean;
+  readonly id: string;
+  readonly userId: string;
+  readonly threadId: string;
+  readonly edited?: {
+    readonly at: number;
+    readonly by: string;
+    readonly moderated: boolean;
   };
-  publishedAt: number;
-  text: string;
-  reactions?: {
-    [emoji: string]: {
-      [key: string]: string;
+  readonly publishedAt: number;
+  readonly text: string;
+  readonly reactions?: {
+    readonly [emoji: string]: {
+      readonly [key: string]: string;
     };
   };
 }

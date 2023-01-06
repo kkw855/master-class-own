@@ -1,13 +1,13 @@
 export default interface Thread {
-  id: string;
-  userId: string;
-  contributors?: string[];
-  firstPostId: string;
-  forumId: string;
-  lastPostAt: number;
-  lastPostId: string;
-  posts: string[];
-  publishedAt: number;
-  slug: string;
-  title: string;
+  readonly id: string;
+  readonly userId: string;
+  readonly contributors?: readonly string[];
+  readonly firstPostId: string;
+  readonly forumId: string;
+  readonly lastPostAt: number;
+  readonly lastPostId: string;
+  readonly posts: readonly string[];
+  readonly publishedAt: number;
+  readonly slug: string;
+  readonly title: string;
 }

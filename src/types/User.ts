@@ -1,13 +1,13 @@
 export default interface User {
-  avatar: string;
-  email: string;
-  lastVisitAt: number;
-  name: string;
-  isModerator?: boolean;
-  registeredAt: number;
-  username: string;
-  usernameLower: string;
-  id: string;
-  twitter?: string;
-  website?: string;
+  readonly avatar: string;
+  readonly email: string;
+  readonly lastVisitAt: number;
+  readonly name: string;
+  readonly isModerator?: boolean;
+  readonly registeredAt: number;
+  readonly username: string;
+  readonly usernameLower: string;
+  readonly id: string;
+  readonly twitter?: string;
+  readonly website?: string;
 }

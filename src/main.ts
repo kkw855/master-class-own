@@ -4,8 +4,6 @@ import { createPinia } from "pinia";
 import App from "./App.vue";
 import router from "./router";
 
-// import "./assets/main.css";
-
 const app = createApp(App);
 
 app.use(createPinia());
@@ -32,6 +30,8 @@ import type { Semigroup } from "fp-ts/es6/Semigroup";
 import type { Monoid } from "fp-ts/es6/Monoid";
 import { MonoidSum } from "fp-ts/es6/number";
 import { ap } from "fp-ts/es6/Identity";
+import { Lens, Optional } from "monocle-ts";
+import { none, some } from "fp-ts/Option";
 
 // 무조건 성공하는 Promise, 클라이언트가 Task 시그니쳐 보고 무조건 성공하는 비동기 함수라는 것을 인지할 수 있음
 const boolTask: T.Task<boolean> = async () => {
@@ -48,7 +48,7 @@ console.log(boolTask());
 // Either<E, A> 시그니쳐 E 타입을 보고 클라이언트가 어떤 에러가 발생하는지 알 수 있음
 // try-catch-finally 는 unknown. 어떤 에러가 발생할지 클라이언트가 알 수 없음
 class MinLengthValidationError extends Error {
-  _tag: "PasswordMinLengthValidationError";
+  readonly _tag: "PasswordMinLengthValidationError";
 
   private constructor(readonly minLength: number) {
     super(`password fails to meet min length requirement: ${minLength}`);
@@ -68,7 +68,7 @@ console.log(minErr.minLength);
 console.log(minErr);
 
 class CapitalLetterMissingValidationError extends Error {
-  _tag: "PasswordCapitalLetterMissingValidationError";
+  readonly _tag: "PasswordCapitalLetterMissingValidationError";
 
   private constructor() {
     super("password is missing a capital letter");
@@ -87,9 +87,9 @@ type PasswordValidationError =
   | CapitalLetterMissingValidationError;
 
 interface Password {
-  _tag: "Password";
-  value: string;
-  isHashed: boolean;
+  readonly _tag: "Password";
+  readonly value: string;
+  readonly isHashed: boolean;
 }
 function of(value: string): Password {
   return { _tag: "Password", value, isHashed: false };
@@ -99,8 +99,8 @@ function fromHashed(value: string): Password {
 }
 
 type PasswordSpecification = {
-  minLength?: number;
-  capitalLetterRequired?: boolean;
+  readonly minLength?: number;
+  readonly capitalLetterRequired?: boolean;
 };
 
 function validate({
@@ -236,9 +236,9 @@ const u1 = pipe(
 console.log(u1);
 
 interface ReactionTest {
-  reactions?: {
-    [key: string]: {
-      [key: string]: string;
+  readonly reactions?: {
+    readonly [key: string]: {
+      readonly [key: string]: string;
     };
   };
 }
@@ -253,7 +253,7 @@ type Bar = {
   readonly g: () => number;
 };
 
-const arr: (Foo | Bar)[] = [
+const arr: readonly (Foo | Bar)[] = [
   { _tag: "Foo", f: () => 1 },
   { _tag: "Foo", f: () => 2 },
   { _tag: "Foo", f: () => 3 },
@@ -279,7 +279,7 @@ const monoidMax: Monoid<number> = {
   concat: (x, y) => Math.max(x, y),
 };
 
-const compute = (arr: Array<Foo | Bar>) =>
+const compute = (arr: ReadonlyArray<Foo | Bar>) =>
   pipe(
     arr,
     A.partitionMap((a) => (a._tag === "Foo" ? E.left(a) : E.right(a))),
@@ -293,7 +293,7 @@ const compute = (arr: Array<Foo | Bar>) =>
   );
 
 // 장황한 reduce 함수를 간결하게 만든다
-const compute2 = (arr: Array<Foo | Bar>) =>
+const compute2 = (arr: ReadonlyArray<Foo | Bar>) =>
   pipe(
     arr,
     A.partitionMap((a) => (a._tag === "Foo" ? E.left(a) : E.right(a))),
@@ -316,3 +316,77 @@ console.log(compute2(arr));
 
 const arr2 = [1, undefined, 3].map(O.of);
 console.log(A.sequence(O.option)(arr2));
+
+interface Street {
+  readonly num: number;
+  readonly name: string;
+}
+interface Address {
+  readonly city: string;
+  readonly street: Street;
+}
+interface Company {
+  readonly name: string;
+  readonly address: Address;
+}
+interface Employee {
+  readonly name: string;
+  readonly company: Company;
+}
+
+const employee: Employee = {
+  name: "john",
+  company: {
+    name: "awesome inc",
+    address: {
+      city: "london",
+      street: {
+        num: 23,
+        name: "high street",
+      },
+    },
+  },
+};
+
+const company = Lens.fromProp<Employee>()("company");
+const address = Lens.fromProp<Company>()("address");
+const street = Lens.fromProp<Address>()("street");
+const name = Lens.fromProp<Street>()("name");
+
+const capitalize = (s: string): string =>
+  s.substring(0, 1).toUpperCase() + s.substring(1);
+
+const modified = company
+  .compose(address)
+  .compose(street)
+  .compose(name)
+  .modify(capitalize)(employee);
+
+console.log(modified);
+
+const name2 = Lens.fromPath<Employee>()([
+  "company",
+  "address",
+  "street",
+  "name",
+]);
+console.log(name2.modify(capitalize)(employee));
+
+const firstLetter = new Optional<string, string>(
+  (s) => (s.length > 0 ? some(s[0]) : none),
+  (a) => (s) => {
+    console.log(a, s);
+    return a + s.substring(1);
+  }
+);
+
+const modified2 = company
+  .compose(address)
+  .compose(street)
+  .compose(name)
+  .asOptional()
+  .compose(firstLetter)
+  .modify((s) => s.toUpperCase())(employee);
+
+console.log(modified2);
+console.log(employee);
